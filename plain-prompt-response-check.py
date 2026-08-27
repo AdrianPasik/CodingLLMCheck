@@ -37,6 +37,25 @@ class RESTSpinner:
                 sys.stdout.flush()
                 time.sleep(0.1)
 
+class TextAnalysisItem:
+    def __init__(self, text, right_strings, wrong_strings):
+        self.text = text
+        self.right_strings = right_strings
+        self.wrong_strings = wrong_strings
+
+def find_strings_in_prompt(text, right_strings, wrong_strings):
+    found_right = []
+    found_wrong = []
+    for string in right_strings:
+        if string in text:
+            found_right.append(string)
+
+    for string in wrong_strings:
+        if string in text:
+            found_wrong.append(string)
+    
+    return (found_right, found_wrong)
+
 
 SYSTEM_PROMPT = "You are expert Software Engineer."
 def get_loaded_model():
@@ -46,14 +65,10 @@ def get_loaded_model():
         models_data = response.json()
         if 'data' in models_data and len(models_data['data']) > 0:
             loaded_model = models_data['data'][0]
-            print(Fore.GREEN + f"Currently loaded model: {loaded_model.get('id', 'Unknown')}")
-            print(Fore.GREEN + f"Model details:")
-            for key, value in loaded_model.items():
-                if key != 'id':
-                    print(Fore.GREEN + f"  {key}: {value}")
         else:
             print(Fore.RED + "No models found or no model currently loaded")
-            
+            return 'Unknown'
+        return loaded_model.get('id', 'Unknown')
     except requests.exceptions.RequestException as e:
         print(Fore.RED + f"Error connecting to LM Studio API: {e}")
     except json.JSONDecodeError as e:
@@ -104,14 +119,38 @@ def main():
     
     try:
         spinner.start("Getting model....")
-        get_loaded_model()
-        example_prompt = "Explain the concept of machine learning in simple terms."
-        print(Fore.GREEN + f"Prompt: {example_prompt}\n")
+        model_name = get_loaded_model()
         spinner.stop()
-        spinner.start("Prompting...")
-        output = send_prompt(example_prompt)
-        print(f"{output}")
-        spinner.stop()
+        collection = [
+            TextAnalysisItem(f"In CSS how do I set margin left to 25 % of device width ?", ["margin-left: 25vw;"], ["margin-left: 25vh;"]), #25% is parent element not device width
+        ]
+        overall_right = []
+        overall_wrong = []
+        print(Fore.CYAN + f"Model: {model_name}\n")
+        for item in collection:
+
+            print(Style.RESET_ALL + f"Prompt: {item.text}\n")
+            spinner.start("LM Studio is working...")
+            output = send_prompt(item.text)
+            right, wrong = find_strings_in_prompt(output, item.right_strings, item.wrong_strings)
+            print(f"\n")
+            print(Fore.GREEN + f"Got {len(right)} / {len(item.right_strings)} right strings")
+            print(Fore.RED + f"Got {len(wrong)} / {len(item.wrong_strings)} wrong strings")
+            overall_right.extend(right)
+            overall_wrong.extend(wrong)
+            #print(f"{output}") #uncomment for debugging
+            spinner.stop()
+            print(Style.RESET_ALL + f"\n")
+        print(f"Model {model_name} overall had ")
+        print(Fore.GREEN + f"{len(overall_right)} overall right")
+        print(Fore.RED + f"{len(overall_wrong)} overall wrong")
+        if len(overall_right) > 0:
+            print(Fore.GREEN + f"Right answers {overall_right}")
+        if len(overall_wrong) > 0:
+            print(Fore.RED + f"Wrong answers {overall_wrong}")
+        else:
+            print(Fore.GREEN + f"No wrong answers!")
+        print(Style.RESET_ALL + f"\n")
     except Exception as e:
         spinner.stop()
         print(Fore.RED + f"Error: {e}")

@@ -133,14 +133,14 @@ def main():
             spinner.start("LM Studio is working...")
             output = send_prompt(item.text)
             right, wrong = find_strings_in_prompt(output, item.right_strings, item.wrong_strings)
-            print(f"\n")
+            print("\n")
             print(Fore.GREEN + f"Got {len(right)} / {len(item.right_strings)} right strings")
             print(Fore.RED + f"Got {len(wrong)} / {len(item.wrong_strings)} wrong strings")
             overall_right.extend(right)
             overall_wrong.extend(wrong)
             #print(f"{output}") #uncomment for debugging
             spinner.stop()
-            print(Style.RESET_ALL + f"\n")
+            print(Style.RESET_ALL + "\n")
         print(f"Model {model_name} overall had ")
         print(Fore.GREEN + f"{len(overall_right)} overall right")
         print(Fore.RED + f"{len(overall_wrong)} overall wrong")
@@ -149,8 +149,8 @@ def main():
         if len(overall_wrong) > 0:
             print(Fore.RED + f"Wrong answers {overall_wrong}")
         else:
-            print(Fore.GREEN + f"No wrong answers!")
-        print(Style.RESET_ALL + f"\n")
+            print(Fore.GREEN + "No wrong answers!")
+        print(Style.RESET_ALL + "\n")
     except Exception as e:
         spinner.stop()
         print(Fore.RED + f"Error: {e}")

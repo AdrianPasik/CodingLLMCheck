@@ -122,7 +122,7 @@ def main():
         model_name = get_loaded_model()
         spinner.stop()
         collection = [
-            TextAnalysisItem(f"In CSS how do I set margin left to 25 % of device width ?", ["margin-left: 25vw;"], ["margin-left: 25vh;"]), #25% is parent element not device width
+            TextAnalysisItem("In CSS how do I set margin left to 25% of device width ?", ["margin-left: 25vw;"], ["margin-left: 25vh;"]), #25% is parent element not device width
         ]
         overall_right = []
         overall_wrong = []
